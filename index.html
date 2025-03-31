@@ -23,8 +23,9 @@
         /* Estilo para el mensaje */
         #message-container {
             position: absolute;
-            top: 10px;
-            right: 10px; /* Mover hacia el lado opuesto de los botones */
+            bottom: 10px; /* Mover mensajes a la parte inferior */
+            left: 50%; /* Centrar horizontalmente */
+            transform: translateX(-50%); /* Centrar correctamente */
             background: white;
             padding: 10px;
             z-index: 100;
@@ -36,7 +37,7 @@
 <body>
     <a-scene>
         <!-- Cubo básico con interactividad -->
-        <a-box position="0 1.5 -3" rotation="0 45 45" color="tomato" shadow 
+        <a-box position="0 1.5 -3" rotation="0 45 45" color="red" shadow 
         animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"
         id="interactive-cube"></a-box>
 
@@ -67,6 +68,7 @@
         const testVolumeButton = document.querySelector('#test-volume');
         let isAnimating = true; // Estado inicial de la animación
         let isInfoVisible = false; // Estado inicial de la información
+        let isTestMessageVisible = false; // Estado inicial del mensaje de test
         let initialDistance = null; // Para rastrear la distancia inicial entre dedos
 
         // Alternar animación (detener/reanudar)
@@ -92,10 +94,16 @@
             }
         });
 
-        // Mostrar el enunciado del test sobre el volumen
+        // Mostrar/Ocultar el enunciado del test sobre el volumen
         testVolumeButton.addEventListener('click', () => {
-            messageContent.innerText = 'El volumen de un cubo que tiene por proyección un cuadrado que mide de lado 9m es de:';
-            messageContainer.style.display = 'block'; // Mostrar mensaje
+            if (isTestMessageVisible) {
+                messageContainer.style.display = 'none'; // Ocultar mensaje
+                isTestMessageVisible = false;
+            } else {
+                messageContent.innerText = 'El volumen de un cubo que tiene por proyección un cuadrado que mide de lado 9m es de:';
+                messageContainer.style.display = 'block'; // Mostrar mensaje
+                isTestMessageVisible = true;
+            }
         });
 
         // Detectar gestos táctiles para zoom in y zoom out
