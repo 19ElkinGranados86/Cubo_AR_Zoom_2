@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cubo Interactivo - AR</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <style>
+        /* Estilo para los botones */
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            z-index: 100;
+        }
+        #controls button {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px; /* Aumentar el tamaño de la fuente */
+            padding: 8px;
+        }
+
+        /* Estilo para el mensaje */
+        #message-container {
+            position: absolute;
+            top: 10px;
+            right: 10px; /* Mover hacia el lado opuesto de los botones */
+            background: white;
+            padding: 10px;
+            z-index: 100;
+            font-size: 16px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <a-scene>
+        <!-- Cubo básico con interactividad -->
+        <a-box position="0 1.5 -3" rotation="0 45 45" color="tomato" shadow 
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"
+        id="interactive-cube"></a-box>
+
+        <!-- Mensaje reutilizable -->
+        <a-text value="" position="0 0.5 -3" color="black" 
+        background="color: white" visible="false" id="definition-message"></a-text>
+    </a-scene>
+
+    <!-- Controles alineados al costado izquierdo -->
+    <div id="controls">
+        <button id="toggle-animation">Detener/Reanudar Animación</button>
+        <button id="toggle-info">Mostrar/Ocultar Información del Cubo</button>
+        <button id="test-volume">Test sobre el Volumen del Cubo</button>
+    </div>
+
+    <!-- Contenedor para el mensaje -->
+    <div id="message-container" style="display: none;"> <!-- Inicialmente oculto -->
+        <p id="message-content"></p>
+    </div>
+
+    <script>
+        // Capturar elementos
+        const cube = document.querySelector('#interactive-cube');
+        const messageContainer = document.querySelector('#message-container');
+        const messageContent = document.querySelector('#message-content');
+        const toggleAnimationButton = document.querySelector('#toggle-animation');
+        const toggleInfoButton = document.querySelector('#toggle-info');
+        const testVolumeButton = document.querySelector('#test-volume');
+        let isAnimating = true; // Estado inicial de la animación
+        let isInfoVisible = false; // Estado inicial de la información
+        let initialDistance = null; // Para rastrear la distancia inicial entre dedos
+
+        // Alternar animación (detener/reanudar)
+        toggleAnimationButton.addEventListener('click', () => {
+            if (isAnimating) {
+                cube.removeAttribute('animation'); // Detener animación
+                isAnimating = false;
+            } else {
+                cube.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 3000'); // Reanudar animación
+                isAnimating = true;
+            }
+        });
+
+        // Alternar información del cubo (mostrar/ocultar)
+        toggleInfoButton.addEventListener('click', () => {
+            if (isInfoVisible) {
+                messageContainer.style.display = 'none'; // Ocultar mensaje
+                isInfoVisible = false;
+            } else {
+                messageContent.innerText = 'El cubo es una construccion geometrica\n a partir de un cuadrado que se proyecta en tres dimensiones.\nPara calcular el volumen de un cubo se eleva a la tres el valor de su lado';
+                messageContainer.style.display = 'block'; // Mostrar mensaje
+                isInfoVisible = true;
+            }
+        });
+
+        // Mostrar el enunciado del test sobre el volumen
+        testVolumeButton.addEventListener('click', () => {
+            messageContent.innerText = 'El volumen de un cubo que tiene por proyección un cuadrado que mide de lado 9m es de:';
+            messageContainer.style.display = 'block'; // Mostrar mensaje
+        });
+
+        // Detectar gestos táctiles para zoom in y zoom out
+        window.addEventListener('touchmove', (event) => {
+            if (event.touches.length === 2) {
+                const touch1 = event.touches[0];
+                const touch2 = event.touches[1];
+                
+                // Calcular la distancia actual entre los dedos
+                const currentDistance = Math.sqrt(
+                    Math.pow(touch2.pageX - touch1.pageX, 2) +
+                    Math.pow(touch2.pageY - touch1.pageY, 2)
+                );
+
+                // Si es la primera vez, guardar la distancia inicial
+                if (!initialDistance) {
+                    initialDistance = currentDistance;
+                } else {
+                    // Cambiar la escala del cubo según la diferencia de distancia
+                    const scaleChange = (currentDistance - initialDistance) * 0.01; // Ajustar sensibilidad
+                    const currentScale = cube.getAttribute('scale') || { x: 1, y: 1, z: 1 };
+                    cube.setAttribute('scale', {
+                        x: Math.max(currentScale.x + scaleChange, 0.1),
+                        y: Math.max(currentScale.y + scaleChange, 0.1),
+                        z: Math.max(currentScale.z + scaleChange, 0.1)
+                    });
+                    initialDistance = currentDistance; // Actualizar distancia inicial
+                }
+            }
+        });
+
+        // Reiniciar la distancia inicial cuando se levantan los dedos
+        window.addEventListener('touchend', () => {
+            initialDistance = null;
+        });
+    </script>
+</body>
+</html>
